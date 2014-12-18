@@ -8,7 +8,10 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using System.Xml;
 using Ionic.Zip;
+using System.Diagnostics;
+using System.Reflection;
 using Battlefield2.Properties;
 
 namespace Battlefield2
@@ -20,6 +23,19 @@ namespace Battlefield2
         /// </summary>
         protected TreeNode SelectedNode;
 
+        /// <summary>
+        /// The ObjectInfo.xml file object
+        /// </summary>
+        protected XmlDocument ObjectsXml;
+
+        /// <summary>
+        /// The selected objects XML node if it exists in the ObjectsXml
+        /// </summary>
+        protected XmlNode ItemXmlNode;
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public MainForm()
         {
             // Create form controls
@@ -31,6 +47,28 @@ namespace Battlefield2
                 Settings.Default.Upgrade();
                 Settings.Default.SettingsUpdated = true;
                 Settings.Default.Save();
+            }
+
+            // Load the ObjectsInfo.xml
+            ObjectsXml = new XmlDocument();
+            string path = Path.Combine(Application.StartupPath, "ObjectInfo.xml");
+            if (File.Exists(path))
+            {
+                ObjectsXml.Load(path);
+            }
+            else
+            {
+                // Load the embeded default version
+                Assembly assembly = Assembly.GetExecutingAssembly();
+                using (Stream stream = assembly.GetManifestResourceStream("Battlefield2.ObjectInfo.xml"))
+                using (StreamReader reader = new StreamReader(stream))
+                {
+                    // Create the file
+                    string result = reader.ReadToEnd();
+                    File.WriteAllText(path, result);
+                    Thread.Sleep(100);
+                    ObjectsXml.Load(path);
+                }
             }
         }
 
@@ -48,6 +86,20 @@ namespace Battlefield2
             // Make sure its a child node
             if (Node == null || Node.Nodes.Count != 0)
                 return;
+
+            // Get node path
+            if (ObjectsXml != null)
+            {
+                try
+                {
+                    ItemXmlNode = ObjectsXml.SelectSingleNode("//object[@name='" + Node.Text.ToLowerInvariant() + "']");
+                }
+                catch (Exception)
+                {
+                    ItemXmlNode = null;
+                }
+            }
+
 
             // The list of AiFiles for this object are stored in the node tag
             SelectedNode = Node;
@@ -223,6 +275,11 @@ namespace Battlefield2
             string path = Path.Combine(Application.StartupPath, "Temp", Name);
             TreeNode topNode = new TreeNode(Name);
 
+            // Make sure our tempalte directory exists
+            if (!Directory.Exists(path))
+                return;
+
+            // Now loop through each object type
             foreach (string dir in Directory.EnumerateDirectories(path))
             {
                 string dirName = dir.Remove(0, path.Length + 1);
@@ -252,9 +309,8 @@ namespace Battlefield2
                     {
                         TaskForm.UpdateStatus("Loading: " + Path.Combine(subdirName, "ai", "Object.ai"));
                         AiFile file = new AiFile(Path.Combine(subdir, "ai", "Objects.ai"), AiFileType.Vehicle);
-                        ObjectManager.RegisterFileObjects(file);
-
-                        files.Add(AiFileType.Vehicle, file);
+                        if(ObjectManager.RegisterFileObjects(file))
+                            files.Add(AiFileType.Vehicle, file);
                     }
 
                     // Load the Weapons.ai file if we have one
@@ -262,13 +318,15 @@ namespace Battlefield2
                     {
                         TaskForm.UpdateStatus("Loading: " + Path.Combine(subdirName, "ai", "Weapons.ai"));
                         AiFile file = new AiFile(Path.Combine(subdir, "ai", "Weapons.ai"), AiFileType.Weapon);
-                        ObjectManager.RegisterFileObjects(file);
-
-                        files.Add(AiFileType.Weapon, file);
+                        if(ObjectManager.RegisterFileObjects(file))
+                            files.Add(AiFileType.Weapon, file);
                     }
 
-                    subNode.Tag = files;
-                    dirNode.Nodes.Add(subNode);
+                    if (files.Count > 0)
+                    {
+                        subNode.Tag = files;
+                        dirNode.Nodes.Add(subNode);
+                    }
                 }
 
                 if(dirNode.Nodes.Count > 0)
@@ -525,10 +583,10 @@ namespace Battlefield2
                     // Extract just the files we need
                     ZipEntry[] Entries = Zip.Entries.Where(
                         x => (
-                            x.FileName.StartsWith("Vehicles") || 
-                            x.FileName.StartsWith("Weapons") || 
-                            x.FileName.StartsWith("Kits")
-                        ) && x.FileName.EndsWith(".ai")
+                            x.FileName.StartsWith("Vehicles", StringComparison.InvariantCultureIgnoreCase) ||
+                            x.FileName.StartsWith("Weapons", StringComparison.InvariantCultureIgnoreCase) ||
+                            x.FileName.StartsWith("Kits", StringComparison.InvariantCultureIgnoreCase)
+                        ) && x.FileName.EndsWith(".ai", StringComparison.InvariantCultureIgnoreCase)
                     ).ToArray();
 
                     // Extract entries
@@ -775,6 +833,8 @@ namespace Battlefield2
 
         #endregion
 
+        #region General Main Form Events
+
         private void MainForm_Shown(object sender, EventArgs e)
         {
             string path = Path.Combine(Application.StartupPath, "Temp");
@@ -809,5 +869,53 @@ namespace Battlefield2
             // Reload
             ObjectSelect_SelectedIndexChanged(this, default(EventArgs));
         }
+
+        private void treeView1_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                TreeNode N = treeView1.SelectedNode;
+                if (N.Nodes.Count == 0 && N.Parent != null)
+                    contextMenu.Show(Cursor.Position);
+            }
+        }
+
+        private void DescMenuItem_Click(object sender, EventArgs e)
+        {
+            
+            InfoPopupForm form = new InfoPopupForm(ItemXmlNode);
+            form.ShowDialog();
+        }
+
+        private void NameMenuItem_Click(object sender, EventArgs e)
+        {
+            TreeNode N = treeView1.SelectedNode;
+            Clipboard.SetText(N.Text);
+        }
+
+        private void contextMenu_Opening(object sender, CancelEventArgs e)
+        {
+            contextMenu.Items[0].Enabled = (ItemXmlNode != null);
+        }
+
+        private void OpenFileMenuItem_Click(object sender, EventArgs e)
+        {
+            Dictionary<AiFileType, AiFile> files = (Dictionary<AiFileType, AiFile>)SelectedNode.Tag;
+
+            switch (tabControl1.SelectedTab.Text)
+            {
+                case "Weapon Data":
+                    Process.Start(files[AiFileType.Weapon].FilePath);
+                    break;
+                case "Vehicle Data":
+                    Process.Start(files[AiFileType.Vehicle].FilePath);
+                    break;
+                case "Kit Data":
+                    Process.Start(files[AiFileType.Kit].FilePath);
+                    break;
+            }
+        }
+
+        #endregion
     }
 }

@@ -72,6 +72,12 @@
   <ItemGroup>
     <Compile Include="ExceptionHandler.cs" />
     <Compile Include="Extensions\DictionaryExt.cs" />
+    <Compile Include="UI\InfoPopupForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\InfoPopupForm.Designer.cs">
+      <DependentUpon>InfoPopupForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Parser\Templates\ObjectTemplate.cs" />
     <Compile Include="Parser\Templates\ObjectProperty.cs" />
     <Compile Include="ObjectManager.cs" />
@@ -112,6 +118,9 @@
     <Compile Include="UI\TaskForm.designer.cs">
       <DependentUpon>TaskForm.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="UI\InfoPopupForm.resx">
+      <DependentUpon>InfoPopupForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="UI\CalculatorForm.resx">
       <DependentUpon>CalculatorForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -148,6 +157,9 @@
   <ItemGroup>
     <Content Include="Battlefield 2 icon #2.ico" />
     <Content Include="Ionic.Zip.dll" />
+    <EmbeddedResource Include="ObjectInfo.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
     <None Include="Resources\vistaerror.png" />
     <None Include="Resources\calculate.png" />
     <None Include="Resources\About_Push.png" />

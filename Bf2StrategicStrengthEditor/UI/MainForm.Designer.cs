@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.treeView1 = new System.Windows.Forms.TreeView();
             this.tabControl1 = new System.Windows.Forms.TabControl();
@@ -95,10 +96,16 @@
             this.InfoLink = new System.Windows.Forms.LinkLabel();
             this.shapeContainer2 = new Microsoft.VisualBasic.PowerPacks.ShapeContainer();
             this.lineShape2 = new Microsoft.VisualBasic.PowerPacks.LineShape();
+            this.contextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.DescMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.NameMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.OpenFileMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.RestoreBtn = new System.Windows.Forms.Button();
             this.RefreshBtn = new System.Windows.Forms.Button();
             this.SaveBtn = new System.Windows.Forms.Button();
             this.NewProfileBtn = new System.Windows.Forms.Button();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.label26 = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.AllowedTimeDiff)).BeginInit();
@@ -127,15 +134,17 @@
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.panel2.SuspendLayout();
+            this.contextMenu.SuspendLayout();
             this.SuspendLayout();
             // 
             // treeView1
             // 
             this.treeView1.Location = new System.Drawing.Point(12, 17);
             this.treeView1.Name = "treeView1";
-            this.treeView1.Size = new System.Drawing.Size(200, 300);
+            this.treeView1.Size = new System.Drawing.Size(200, 275);
             this.treeView1.TabIndex = 1;
             this.treeView1.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView1_AfterSelect);
+            this.treeView1.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView1_NodeMouseClick);
             // 
             // tabControl1
             // 
@@ -215,6 +224,7 @@
             this.AllowedTimeDiff.Name = "AllowedTimeDiff";
             this.AllowedTimeDiff.Size = new System.Drawing.Size(65, 20);
             this.AllowedTimeDiff.TabIndex = 11;
+            this.toolTip1.SetToolTip(this.AllowedTimeDiff, resources.GetString("AllowedTimeDiff.ToolTip"));
             this.AllowedTimeDiff.Leave += new System.EventHandler(this.AllowedTimeDiff_Leave);
             // 
             // Degeneration
@@ -228,6 +238,8 @@
             this.Degeneration.Name = "Degeneration";
             this.Degeneration.Size = new System.Drawing.Size(65, 20);
             this.Degeneration.TabIndex = 10;
+            this.toolTip1.SetToolTip(this.Degeneration, "Degeneration is used the set how fast the bots forget the object once they cannot" +
+                    " see it anymore. ");
             this.Degeneration.Leave += new System.EventHandler(this.Degeneration_Leave);
             // 
             // ObjectBasicTemp
@@ -857,6 +869,7 @@
             // panel2
             // 
             this.panel2.BackColor = System.Drawing.SystemColors.Window;
+            this.panel2.Controls.Add(this.label26);
             this.panel2.Controls.Add(this.InfoLink);
             this.panel2.Controls.Add(this.tabControl1);
             this.panel2.Controls.Add(this.treeView1);
@@ -896,6 +909,37 @@
             this.lineShape2.X2 = 683;
             this.lineShape2.Y1 = 332;
             this.lineShape2.Y2 = 332;
+            // 
+            // contextMenu
+            // 
+            this.contextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.DescMenuItem,
+            this.NameMenuItem,
+            this.OpenFileMenuItem});
+            this.contextMenu.Name = "ContextMenu";
+            this.contextMenu.Size = new System.Drawing.Size(176, 70);
+            this.contextMenu.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenu_Opening);
+            // 
+            // DescMenuItem
+            // 
+            this.DescMenuItem.Name = "DescMenuItem";
+            this.DescMenuItem.Size = new System.Drawing.Size(175, 22);
+            this.DescMenuItem.Text = "Get Object Desc";
+            this.DescMenuItem.Click += new System.EventHandler(this.DescMenuItem_Click);
+            // 
+            // NameMenuItem
+            // 
+            this.NameMenuItem.Name = "NameMenuItem";
+            this.NameMenuItem.Size = new System.Drawing.Size(175, 22);
+            this.NameMenuItem.Text = "Copy Object Name";
+            this.NameMenuItem.Click += new System.EventHandler(this.NameMenuItem_Click);
+            // 
+            // OpenFileMenuItem
+            // 
+            this.OpenFileMenuItem.Name = "OpenFileMenuItem";
+            this.OpenFileMenuItem.Size = new System.Drawing.Size(175, 22);
+            this.OpenFileMenuItem.Text = "Open Object File";
+            this.OpenFileMenuItem.Click += new System.EventHandler(this.OpenFileMenuItem_Click);
             // 
             // RestoreBtn
             // 
@@ -952,6 +996,21 @@
             this.NewProfileBtn.UseVisualStyleBackColor = true;
             this.NewProfileBtn.Click += new System.EventHandler(this.NewProfileBtn_Click);
             // 
+            // toolTip1
+            // 
+            this.toolTip1.AutoPopDelay = 25000;
+            this.toolTip1.InitialDelay = 500;
+            this.toolTip1.ReshowDelay = 100;
+            // 
+            // label26
+            // 
+            this.label26.AutoSize = true;
+            this.label26.Location = new System.Drawing.Point(12, 300);
+            this.label26.Name = "label26";
+            this.label26.Size = new System.Drawing.Size(190, 13);
+            this.label26.TabIndex = 15;
+            this.label26.Text = "* Right Click an object for more options";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -968,7 +1027,9 @@
             this.MaximizeBox = false;
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Battlefield 2 Strategic Strength Editor";
+            this.Text = "Battlefield 2 Strategic Strength Editor v1.1";
+            this.toolTip1.SetToolTip(this, "Degeneration is used the set how fast the bots forget the object once they cannot" +
+                    " see it anymore. ");
             this.Shown += new System.EventHandler(this.MainForm_Shown);
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
@@ -1003,6 +1064,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
+            this.contextMenu.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -1079,6 +1141,12 @@
         private System.Windows.Forms.Label StrTypeLabel;
         private System.Windows.Forms.LinkLabel InfoLink;
         private System.Windows.Forms.LinkLabel CalculatorLink;
+        private System.Windows.Forms.ContextMenuStrip contextMenu;
+        private System.Windows.Forms.ToolStripMenuItem DescMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem NameMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem OpenFileMenuItem;
+        private System.Windows.Forms.ToolTip toolTip1;
+        private System.Windows.Forms.Label label26;
 
     }
 }

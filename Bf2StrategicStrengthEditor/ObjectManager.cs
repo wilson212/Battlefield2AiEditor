@@ -35,11 +35,26 @@ namespace Battlefield2
         /// <summary>
         /// Loads all of the AiFiles objects into the Global Namespace
         /// </summary>
-        /// <param name="ConFile"></param>
-        public static void RegisterFileObjects(AiFile ConFile)
+        /// <param name="ConFile">The AI file to parse</param>
+        /// <returns>Returns whether or not the file could be fully parsed</returns>
+        public static bool RegisterFileObjects(AiFile ConFile)
         {
             // Parsing this file will add all objects to the Globals
-            AiFileParser.Parse(ConFile);
+            try
+            {
+                AiFileParser.Parse(ConFile);
+                return true;
+            }
+            catch (Exception)
+            {
+                // Remove all objects in the AiFile
+                foreach (var item in Globals.Where(x => x.Value.FilePath == ConFile.FilePath).ToList())
+                {
+                    Globals.Remove(item.Key);
+                }
+
+                return false;
+            }
         }
 
         /// <summary>

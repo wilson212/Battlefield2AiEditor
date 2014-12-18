@@ -261,6 +261,7 @@ namespace Battlefield2
             PosHasWeaponBox.Checked = pco.HasWeapon;
             PosIsPowerfulBox.Checked = pco.WeaponIsPowerful;
             PosIsEffective.Checked = pco.WeaponIsEffective;
+            CanFireWpnBox.Checked = pco.CanFireHandWeapon;
             IsMobileBox.Checked = pco.IsMobile;
             IsStationaryBox.Checked = pco.IsMountedWeapon;
             CanTakeCPBox.Checked = pco.CanTakeCP;
